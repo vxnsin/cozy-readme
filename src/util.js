@@ -39,6 +39,36 @@ export function variables(data, config = {}) {
     'github.user': (config.github && config.github.user) || '',
     'github.contributions': data.github ? data.github.contributions : '',
     'github.repos': data.github ? data.github.repos : '',
-    'github.stars': data.github ? data.github.stars : ''
+    'github.stars': data.github ? data.github.stars : '',
+    'repo.name': data.repo ? data.repo.name : (config.repo || ''),
+    'repo.shortName': data.repo ? data.repo.shortName : '',
+    'repo.description': data.repo ? data.repo.description : '',
+    'repo.stars': data.repo ? data.repo.stars : '',
+    'repo.forks': data.repo ? data.repo.forks : '',
+    'repo.commits': data.repo && data.repo.commitCount != null ? data.repo.commitCount : '',
+    'repo.release': data.repo && data.repo.releases[0] ? data.repo.releases[0].tag : '',
+    'repo.license': data.repo && data.repo.license ? data.repo.license : '',
+    'repo.branch': data.repo ? data.repo.defaultBranch : ''
   };
+}
+
+// Linguist colours for common languages; the REST API does not return them.
+const LANG_COLORS = {
+  JavaScript: '#f1e05a', TypeScript: '#3178c6', Python: '#3572A5', Java: '#b07219', Kotlin: '#A97BFF', Go: '#00ADD8',
+  Rust: '#dea584', C: '#555555', 'C++': '#f34b7d', 'C#': '#178600', PHP: '#4F5D95', Ruby: '#701516', Swift: '#F05138',
+  Dart: '#00B4AB', Lua: '#000080', Shell: '#89e051', PowerShell: '#012456', HTML: '#e34c26', CSS: '#663399',
+  SCSS: '#c6538c', Vue: '#41b883', Svelte: '#ff3e00', Astro: '#ff5a03', Dockerfile: '#384d54', Makefile: '#427819',
+  'Jupyter Notebook': '#DA5B0B', Elixir: '#6e4a7e', Haskell: '#5e5086', Scala: '#c22d40', Zig: '#ec915c', Nix: '#7e7eff',
+  MDX: '#fcb32c', Batchfile: '#C1F12E', GDScript: '#355570', Groovy: '#4298b8'
+};
+
+export function langColor(name) {
+  if (LANG_COLORS[name]) return LANG_COLORS[name];
+  let h = 0;
+  for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return `hsl(${h % 360},55%,55%)`;
+}
+
+export function shortDate(date) {
+  return date ? new Date(date).toISOString().slice(0, 10) : '';
 }

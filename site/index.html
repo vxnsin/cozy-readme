@@ -33,6 +33,7 @@
             <option value="aniworld">aniworld</option>
           </select></label>
           <label>anime user<input id="anime-user" class="input" placeholder="your username there"></label>
+          <label class="span2">repo, for the repo cards (empty = the repo the action runs in)<input id="repo" class="input" placeholder="owner/name"></label>
         </div>
       </div>
 
@@ -47,15 +48,25 @@
         </div>
       </div>
 
+      <div class="win">
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>start from</div>
+        <div class="win-body">
+          <p class="hint">a <b>profile</b> readme (<code>you/you</code>) or the readme of any <b>project repo</b>: repo stats, git log, releases, contributors.</p>
+          <div class="add-row">
+            <button id="example" class="btn">profile example</button>
+            <button id="repo-start" class="btn">project repo</button>
+            <button id="reset" class="btn">empty</button>
+          </div>
+        </div>
+      </div>
+
       <div class="win win-dashed">
-        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>import / reset</div>
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>import</div>
         <div class="win-body">
           <p class="hint">paste an existing <code>cozy.config.json</code> to keep editing it.</p>
           <textarea id="import-text" class="input mono" rows="4" placeholder='{ "theme": "spring", "cards": [...] }'></textarea>
           <div class="add-row">
             <button id="import" class="btn">import</button>
-            <button id="example" class="btn">load example</button>
-            <button id="reset" class="btn">start empty</button>
           </div>
           <p id="import-error" class="error" hidden></p>
         </div>
@@ -74,15 +85,18 @@
         <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>3. put it in your profile</div>
         <div class="win-body steps">
           <ol>
-            <li>open your profile repo <code>github.com/<b class="u">you</b>/<b class="u">you</b></code> (create it if it does not exist).</li>
+            <li>open your profile repo <code>github.com/<b class="u">you</b>/<b class="u">you</b></code> (create it if it does not exist), or any project repo.</li>
             <li>save this as <code>cozy.config.json</code> in the repo root:
               <div class="code"><button class="btn copy" data-copy="out-config">copy</button><pre id="out-config"></pre></div>
             </li>
             <li>save this as <code>.github/workflows/cozy-readme.yml</code>:
               <div class="code"><button class="btn copy" data-copy="out-workflow">copy</button><pre id="out-workflow"></pre></div>
             </li>
+            <li id="repo-step" hidden>in a project repo you probably want to keep your own readme. put these markers where the cards should go, the action only fills them in and leaves the rest alone:
+              <div class="code"><button class="btn copy" data-copy="out-markers">copy</button><pre id="out-markers"></pre></div>
+            </li>
             <li id="mal-step" hidden>add a repo secret <code>MAL_CLIENT_ID</code> with your myanimelist client id.</li>
-            <li>go to <b>actions → cozy-readme → run workflow</b>. it rewrites your <code>README.md</code> and keeps it fresh every night. (｡･ω･｡)</li>
+            <li>go to <b>actions → cozy-readme → run workflow</b>. it fills in your <code>README.md</code> and keeps it fresh every night. without markers it writes the whole file. (｡･ω･｡)</li>
           </ol>
           <p class="hint">want your own text around the cards? add a <code>README.template.md</code> with <code>{{cards}}</code> or <code>{{card:id}}</code> and set <code>template: README.template.md</code> in the workflow.</p>
         </div>

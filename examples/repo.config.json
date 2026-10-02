@@ -1,0 +1,12 @@
+{
+  "theme": "spring",
+  "repo": "vxnsin/cozy-readme",
+  "cards": [
+    { "type": "repo", "link": "https://github.com/vxnsin/cozy-readme" },
+    { "type": "button", "id": "nav-configurator", "label": "open the configurator →", "link": "https://vxnsin.github.io/cozy-readme/" },
+    { "type": "button", "id": "nav-example", "label": "see it live", "link": "https://github.com/vxnsin" },
+    { "type": "commits", "link": "https://github.com/vxnsin/cozy-readme/commits" },
+    { "type": "releases", "link": "https://github.com/vxnsin/cozy-readme/releases" },
+    { "type": "contributors", "link": "https://github.com/vxnsin/cozy-readme/graphs/contributors" }
+  ]
+}

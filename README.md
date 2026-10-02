@@ -1,6 +1,10 @@
 # cozy-readme
 
+<!-- cozy:cards -->
+
 Old-web style, animated SVG cards for your GitHub profile README: a pixel-star header with a typewriter, an about window, your tech stack, the anime you watched last, GitHub stats with a hit counter, a themed contribution snake, a marquee, 88x31 buttons and a footer. Light and dark versions follow the viewer's GitHub theme.
+
+It works for project READMEs too: a repo overview, a `git log` with weekly activity, releases and contributors (the cards at the top of this page).
 
 The look comes from [vensin.dev](https://vensin.dev). See it live on [github.com/vxnsin](https://github.com/vxnsin).
 
@@ -8,7 +12,7 @@ The look comes from [vensin.dev](https://vensin.dev). See it live on [github.com
 
 ## Setup
 
-1. Open your profile repo `github.com/<you>/<you>` (create it if it doesn't exist yet).
+1. Open your profile repo `github.com/<you>/<you>` (create it if it doesn't exist yet), or any project repo.
 2. Add a `cozy.config.json`. The [configurator](https://vxnsin.github.io/cozy-readme/) writes it for you, or start from [examples/vxnsin.config.json](examples/vxnsin.config.json).
 3. Add `.github/workflows/cozy-readme.yml`:
 
@@ -84,11 +88,18 @@ Every card takes an optional `id` (used as the file name and for templates) and 
 | `button` | clickable nav button | `label`, `link` |
 | `badge` | 88x31 button | `top`, `bottom`, `mark`, `color`, `link` |
 | `footer` | wordmark, small print and a day counter | `wordmark`, `text`, `note`, `counterLabel`, `counterSince` |
+| `repo` | repo overview: name, description, topics, counters, languages | `name`, `description`, `boxes[]` (`stars` `forks` `issues` `commits` `watchers` `contributors`), `topics`, `languages` |
+| `commits` | `git log` of the latest commits plus 52 weeks of activity | `count`, `prompt`, `chart`, `counter` |
+| `releases` | latest releases, the newest one blinks | `count`, `latestBadge` |
+| `contributors` | avatar grid with contribution counts | `count` |
+
+The repo cards read `config.repo` (`owner/name`). Without it they use the repo the action runs in.
 
 Text fields can use these placeholders:
 - `{year}`, `{date}`, `{years}`, `{since}`
 - `{anime.latest}`, `{anime.title}`
 - `{github.lastPush}`, `{github.user}`, `{github.contributions}`, `{github.repos}`, `{github.stars}`
+- `{repo.name}`, `{repo.shortName}`, `{repo.description}`, `{repo.stars}`, `{repo.forks}`, `{repo.commits}`, `{repo.release}`, `{repo.license}`, `{repo.branch}`
 
 ### Anime sources
 
@@ -101,7 +112,23 @@ Text fields can use these placeholders:
 
 ### Your own text around the cards
 
-Without a template, the README is just the cards in order, plus `readme.before` and `readme.after`. For full control, add a `README.template.md` and set `template: README.template.md` on the action. In the template, `{{cards}}` inserts all cards and `{{card:<id>}}` inserts a single one.
+There are three ways, from least to most control:
+
+1. **Nothing.** The README is just the cards in order, plus `readme.before` and `readme.after`. This fits a profile.
+2. **Markers** in your existing README. This fits project repos. The action only fills the marked spots and leaves everything else as you wrote it:
+
+   ```markdown
+   # my project
+
+   <!-- cozy:repo -->
+
+   some text you wrote yourself …
+
+   <!-- cozy:commits -->
+   ```
+
+   `<!-- cozy:<id> -->` places a single card, and `<!-- cozy:cards -->` places all of them. After the first run each marker gets a matching `<!-- /cozy:<id> -->`. Don't edit anything between the two.
+3. **A template.** Add a `README.template.md` and set `template: README.template.md` on the action. In the template, `{{cards}}` inserts all cards and `{{card:<id>}}` inserts a single one.
 
 ## Local preview
 

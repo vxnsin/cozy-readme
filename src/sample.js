@@ -33,6 +33,41 @@ export function sampleData() {
       ],
       lastPush: { name: 'cozy-readme', at: new Date(Date.now() - 2 * 86400000).toISOString() }
     },
-    snake: null
+    snake: null,
+    repo: {
+      name: 'you/cozy-project',
+      shortName: 'cozy-project',
+      description: 'a tiny tool that does one thing and does it cozy. built on weekends, powered by tea.',
+      homepage: 'https://example.dev',
+      url: 'https://github.com/you/cozy-project',
+      stars: 128,
+      forks: 12,
+      watchers: 6,
+      issues: 3,
+      license: 'MIT',
+      topics: ['cli', 'retro', 'svg', 'github-action'],
+      pushedAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+      createdAt: '2025-04-01T12:00:00Z',
+      defaultBranch: 'main',
+      commitCount: 342,
+      weeks,
+      languages: [{ name: 'TypeScript', share: 0.62 }, { name: 'CSS', share: 0.21 }, { name: 'HTML', share: 0.12 }, { name: 'Shell', share: 0.05 }],
+      commits: [
+        ['a1b2c3d', 'add a snow effect for winter', 'you', 2],
+        ['9f8e7d6', 'fix the typewriter skipping wide characters', 'friend', 20],
+        ['4c5d6e7', 'make the marquee speed configurable', 'you', 46],
+        ['0a1b2c3', 'docs: explain readme markers', 'you', 70],
+        ['7e8f9a0', 'release v1.2.0', 'you', 120],
+        ['3d4e5f6', 'first commit (｡･ω･｡)', 'you', 900]
+      ].map(([sha, message, author, hours]) => ({ sha, message, author, date: new Date(Date.now() - hours * 3600000).toISOString() })),
+      contributors: ['you', 'friend', 'tea-enjoyer', 'pixelcat', 'night-owl'].map((login, i) => ({
+        login, contributions: [241, 58, 21, 9, 3][i], avatar: null
+      })),
+      releases: [
+        { tag: 'v1.2.0', name: 'winter update', date: new Date(Date.now() - 5 * 86400000).toISOString(), prerelease: false },
+        { tag: 'v1.1.0', name: 'more themes', date: new Date(Date.now() - 40 * 86400000).toISOString(), prerelease: false },
+        { tag: 'v1.0.0', name: 'hello world', date: new Date(Date.now() - 90 * 86400000).toISOString(), prerelease: false }
+      ]
+    }
   };
 }

@@ -16,7 +16,10 @@ jobs:
       - name: Render the example config
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node bin/cli.js --config examples/vxnsin.config.json --out out --readme out/README.md --base-url .
+        run: |
+          node bin/cli.js --config examples/vxnsin.config.json --out out --readme out/README.md --base-url .
+          node bin/cli.js --config examples/repo.config.json --out out-repo --readme out-repo/README.md --base-url .
+          test -f out-repo/repo-dark.svg
       - name: Every card produced both themes
         run: |
           test "$(ls out/*-light.svg | wc -l)" -eq "$(ls out/*-dark.svg | wc -l)"

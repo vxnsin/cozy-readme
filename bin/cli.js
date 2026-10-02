@@ -5,13 +5,15 @@
 //     [--template README.template.md] [--base-url https://raw.../output] \
 //     [--snake snk/snake.svg] [--cache dist/anime-covers.json]
 //
-// env: GITHUB_TOKEN (stats), MAL_CLIENT_ID (myanimelist)
+// env: GITHUB_TOKEN (stats, repo), MAL_CLIENT_ID (myanimelist),
+//      GITHUB_REPOSITORY (default for config.repo)
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { renderCards, buildReadme } from '../src/index.js';
+import { renderCards, buildReadme, repoTypes } from '../src/index.js';
 import { loadAnime } from '../src/providers/anime.js';
 import { loadGithub } from '../src/providers/github.js';
+import { loadRepo } from '../src/providers/repo.js';
 
 function args(argv) {
   const out = {};
@@ -60,14 +62,18 @@ async function main() {
   const cache = needsAnime ? await readJson(cacheFile, {}) : {};
   const cacheBefore = JSON.stringify(cache);
 
-  const [github, anime, snake] = await Promise.all([
+  const repoName = config.repo || process.env.GITHUB_REPOSITORY;
+  const needsRepo = repoTypes.some(type => types.has(type));
+
+  const [github, anime, snake, repo] = await Promise.all([
     needsGithub && config.github && config.github.user
       ? settle('github stats', loadGithub({ user: config.github.user, token: process.env.GITHUB_TOKEN, excludeLanguages: config.github.excludeLanguages }))
       : null,
     needsAnime
       ? settle(`anime (${config.anime.source})`, loadAnime(config.anime, { cache, malClientId: process.env.MAL_CLIENT_ID }))
       : null,
-    types.has('snake') && opts.snake ? readFile(opts.snake, 'utf8').catch(() => null) : null
+    types.has('snake') && opts.snake ? readFile(opts.snake, 'utf8').catch(() => null) : null,
+    needsRepo && repoName ? settle(`repo ${repoName}`, loadRepo({ repo: repoName, token: process.env.GITHUB_TOKEN })) : null
   ]);
 
   // <img> SVGs cannot load external images, so covers are inlined
@@ -79,7 +85,11 @@ async function main() {
     });
   }
 
-  const data = { now, github, anime: (anime || []).filter(e => e.coverDataUri), snake };
+  for (const person of (repo && types.has('contributors') ? repo.contributors : [])) {
+    person.avatarDataUri = await toDataUri(person.avatar).catch(() => null);
+  }
+
+  const data = { now, github, anime: (anime || []).filter(e => e.coverDataUri), snake, repo };
   const rendered = await renderCards(config, data);
 
   await mkdir(outDir, { recursive: true });
@@ -101,8 +111,8 @@ async function main() {
     const base = String(opts['base-url'] || '.').replace(/\/$/, '');
     const template = opts.template ? await readFile(opts.template, 'utf8') : null;
     const src = (card, theme) => `${base}/${card.id}-${theme}.svg?v=${hashes[card.id]}`;
-    const readme = buildReadme(config, rendered, src, template);
     const previous = await readFile(opts.readme, 'utf8').catch(() => null);
+    const readme = buildReadme(config, rendered, src, template, previous);
     if (readme !== previous) {
       await writeFile(opts.readme, readme, 'utf8');
       console.log(`wrote ${opts.readme}`);

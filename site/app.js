@@ -4,7 +4,8 @@
 // one level up.
 const lib = await import('./src/index.js').catch(() => import('../src/index.js'));
 const animeLib = await import('./src/providers/anime.js').catch(() => import('../src/providers/anime.js'));
-const { cardTypes, presetNames, renderCards, normalizeCards, sampleData } = lib;
+const repoLib = await import('./src/providers/repo.js').catch(() => import('../src/providers/repo.js'));
+const { cardTypes, presetNames, renderCards, normalizeCards, sampleData, repoTypes } = lib;
 
 const STORAGE_KEY = 'cozy-readme:config';
 const ACTION_REF = 'vxnsin/cozy-readme@v1';
@@ -23,6 +24,18 @@ const STARTER = {
     { type: 'snake' },
     { type: 'marquee' },
     { type: 'footer', wordmark: 'my.site', counterSince: '2020-01-01' }
+  ]
+};
+
+// For a project README: cards are placed with markers so the rest stays.
+const REPO_STARTER = {
+  theme: 'spring',
+  repo: '',
+  cards: [
+    { type: 'repo' },
+    { type: 'commits' },
+    { type: 'releases' },
+    { type: 'contributors' }
   ]
 };
 
@@ -66,10 +79,17 @@ const FIELDS = {
   footer: [...common, F('wordmark', 'wordmark'), F('text', 'text'), F('note', 'small note'),
     F('counterLabel', 'counter label'), F('counterSince', 'count days since (empty hides it)', 'date'), F('link', 'link')],
   button: [F('label', 'label'), F('link', 'link')],
-  badge: [F('top', 'top line'), F('bottom', 'bottom line'), F('mark', 'mark (1 char)'), F('color', 'colour', 'color'), F('link', 'link')]
+  badge: [F('top', 'top line'), F('bottom', 'bottom line'), F('mark', 'mark (1 char)'), F('color', 'colour', 'color'), F('link', 'link')],
+  repo: [...common, F('name', 'name (empty = repo name)'), F('description', 'description (empty = repo description)'),
+    F('boxes', 'boxes (stars, forks, issues, commits, watchers, contributors)', 'text', csv),
+    F('topics', 'topics', 'check'), F('languages', 'language bar', 'check'), F('link', 'link')],
+  commits: [...common, F('prompt', 'prompt line'), F('count', 'commits shown', 'number'), F('chart', 'weekly chart', 'check'),
+    F('chartTitle', 'chart title'), F('counter', 'hit counter', 'check'), F('link', 'link')],
+  contributors: [...common, F('count', 'people shown', 'number'), F('empty', 'text when empty'), F('link', 'link')],
+  releases: [...common, F('count', 'releases shown', 'number'), F('latestBadge', 'badge on the latest'), F('empty', 'text when empty'), F('link', 'link')]
 };
 
-const VARS_NOTE = 'text can use {year} {date} {years} {since} {anime.latest} {github.lastPush}';
+const VARS_NOTE = 'text can use {year} {date} {years} {since} {anime.latest} {github.lastPush} {repo.name} {repo.stars} {repo.release} {repo.commits}';
 
 // --- state -----------------------------------------------------------------
 
@@ -106,7 +126,7 @@ function bindBasics() {
   $('add-type').innerHTML = Object.keys(cardTypes).map(n => `<option value="${n}">${n}</option>`).join('');
   const fields = [
     ['github-user', 'github.user'], ['theme', 'theme'], ['since', 'since'], ['align', 'readme.align'],
-    ['anime-source', 'anime.source'], ['anime-user', 'anime.user']
+    ['anime-source', 'anime.source'], ['anime-user', 'anime.user'], ['repo', 'repo']
   ];
   for (const [id, path] of fields) {
     $(id).addEventListener('input', () => { set(config, path, $(id).value); changed(); });
@@ -120,6 +140,7 @@ function fillBasics() {
   $('align').value = get(config, 'readme.align') || 'center';
   $('anime-source').value = get(config, 'anime.source') || '';
   $('anime-user').value = get(config, 'anime.user') || '';
+  $('repo').value = config.repo || '';
 }
 
 // --- card list -------------------------------------------------------------
@@ -187,14 +208,14 @@ function buildFields(container, card, resolved) {
       input.innerHTML = field.options.map(o => `<option>${o}</option>`).join('');
     } else {
       input = document.createElement('input');
-      input.type = { check: 'checkbox', color: 'color', date: 'date' }[field.kind] || 'text';
+      input.type = { check: 'checkbox', color: 'color', date: 'date', number: 'number' }[field.kind] || 'text';
     }
     if (field.kind !== 'check') input.className = 'input';
     if (field.kind === 'check') input.checked = Boolean(current);
     else input.value = field.format ? field.format(current) : (current ?? '');
 
     input.addEventListener(field.kind === 'check' ? 'change' : 'input', () => {
-      const raw = field.kind === 'check' ? input.checked : input.value;
+      const raw = field.kind === 'check' ? input.checked : field.kind === 'number' ? Number(input.value) : input.value;
       set(card, field.key, field.parse ? field.parse(raw) : raw);
       changed();
     });
@@ -221,6 +242,7 @@ $('add').addEventListener('click', () => {
 
 let renderToken = 0;
 let liveAnime = { key: '', entries: null };
+let liveRepo = { key: '', data: null, error: '' };
 
 async function previewData() {
   const data = sampleData();
@@ -235,6 +257,17 @@ async function previewData() {
       } catch { liveAnime.entries = null; }
     }
     if (liveAnime.entries && liveAnime.entries.length) data.anime = liveAnime.entries;
+  }
+  // public repos can be read without a token (60 requests an hour), cached per repo
+  const needsRepo = config.cards.some(card => repoTypes.includes(card.type));
+  if (needsRepo && /^[\w.-]+\/[\w.-]+$/.test(config.repo || '')) {
+    if (liveRepo.key !== config.repo) {
+      liveRepo = { key: config.repo, data: null, error: '' };
+      try {
+        liveRepo.data = await repoLib.loadRepo({ repo: config.repo });
+      } catch (error) { liveRepo.error = error.message; }
+    }
+    if (liveRepo.data) data.repo = liveRepo.data;
   }
   return data;
 }
@@ -274,7 +307,8 @@ async function renderPreview() {
       preview.appendChild(slot);
     }
   }
-  $('status').textContent = 'ready';
+  $('status').textContent = liveRepo.data && liveRepo.key === config.repo ? `ready · live data for ${config.repo}`
+    : liveRepo.error && liveRepo.key === config.repo ? `repo: ${liveRepo.error}` : 'ready';
 }
 
 for (const tab of document.querySelectorAll('.tab')) {
@@ -294,6 +328,10 @@ function clean(value) {
     return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, clean(v)]));
   }
   return value;
+}
+
+function isRepoSetup() {
+  return config.cards.length > 0 && config.cards.every(card => repoTypes.includes(card.type) || ['button', 'badge', 'marquee', 'stack'].includes(card.type));
 }
 
 function workflow() {
@@ -325,6 +363,9 @@ function renderOutputs() {
   $('out-config').textContent = `${JSON.stringify(clean(config), null, 2)}\n`;
   $('out-workflow').textContent = workflow();
   $('mal-step').hidden = get(config, 'anime.source') !== 'myanimelist';
+  const ids = normalizeCards(config).map(card => card.id);
+  $('out-markers').textContent = `${ids.map(id => `<!-- cozy:${id} -->`).join('\n')}\n\n<!-- or all of them at once: -->\n<!-- cozy:cards -->\n`;
+  $('repo-step').hidden = !isRepoSetup();
   document.querySelectorAll('.u').forEach(el => { el.textContent = get(config, 'github.user') || 'you'; });
 }
 
@@ -360,6 +401,7 @@ $('import').addEventListener('click', () => {
     $('import-error').hidden = false;
   }
 });
+$('repo-start').addEventListener('click', () => replaceConfig(structuredClone(REPO_STARTER)));
 $('reset').addEventListener('click', () => replaceConfig({ theme: 'spring', github: { user: '' }, cards: [] }));
 $('example').addEventListener('click', async () => {
   for (const url of ['./examples/vxnsin.config.json', '../examples/vxnsin.config.json']) {

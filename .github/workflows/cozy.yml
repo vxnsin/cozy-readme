@@ -1,0 +1,22 @@
+# dogfooding: the cards at the top of this README come from this very action
+name: cozy-readme
+
+on:
+  schedule:
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['examples/repo.config.json', 'src/**', 'action.yml', 'bin/**']
+
+permissions:
+  contents: write
+
+jobs:
+  cozy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          config: examples/repo.config.json
