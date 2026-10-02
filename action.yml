@@ -26,7 +26,7 @@ inputs:
     default: ''
   commit_message:
     description: Commit message for README changes
-    default: 'Update profile README'
+    default: 'Update README cards'
 
 runs:
   using: composite

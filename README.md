@@ -68,7 +68,7 @@ The action does three things:
 | `output_branch` | `output` | where the SVGs live |
 | `github_token` | `github.token` | Used for the stats and for pushing. With a personal access token, private contributions count too. |
 | `mal_client_id` | – | Only needed for MyAnimeList. Pass it from a secret. |
-| `commit_message` | `Update profile README` | |
+| `commit_message` | `Update README cards` | |
 
 ## Config
 
