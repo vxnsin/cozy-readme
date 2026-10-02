@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cozy-readme</title>
+  <meta name="description" content="Configure old-web style, animated SVG cards for your GitHub profile README.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1 class="wordmark">cozy<span>.</span>readme</h1>
+    <p class="tagline"><span class="jp">コージー</span> · old-web cards for your github profile <span class="blink">▌</span></p>
+  </header>
+
+  <main class="layout">
+    <section class="col">
+      <div class="win">
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>1. basics</div>
+        <div class="win-body grid2">
+          <label>github user<input id="github-user" class="input" placeholder="octocat"></label>
+          <label>theme<select id="theme" class="input"></select></label>
+          <label>coding since<input id="since" class="input" type="date"></label>
+          <label>align<select id="align" class="input"><option value="center">center</option><option value="left">left</option></select></label>
+          <label>anime source<select id="anime-source" class="input">
+            <option value="">none</option>
+            <option value="anilist">anilist</option>
+            <option value="myanimelist">myanimelist</option>
+            <option value="kitsu">kitsu</option>
+            <option value="aniworld">aniworld</option>
+          </select></label>
+          <label>anime user<input id="anime-user" class="input" placeholder="your username there"></label>
+        </div>
+      </div>
+
+      <div class="win">
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>2. cards<span class="right" id="card-count"></span></div>
+        <div class="win-body">
+          <ol id="cards" class="cards"></ol>
+          <div class="add-row">
+            <select id="add-type" class="input"></select>
+            <button id="add" class="btn">+ add card</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="win win-dashed">
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>import / reset</div>
+        <div class="win-body">
+          <p class="hint">paste an existing <code>cozy.config.json</code> to keep editing it.</p>
+          <textarea id="import-text" class="input mono" rows="4" placeholder='{ "theme": "spring", "cards": [...] }'></textarea>
+          <div class="add-row">
+            <button id="import" class="btn">import</button>
+            <button id="example" class="btn">load example</button>
+            <button id="reset" class="btn">start empty</button>
+          </div>
+          <p id="import-error" class="error" hidden></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="col col-preview">
+      <div class="tabs" role="tablist">
+        <button class="tab" data-mode="light" aria-selected="true">light</button>
+        <button class="tab" data-mode="dark" aria-selected="false">dark</button>
+        <span class="tab-note">preview uses sample data · <span id="status">ready</span></span>
+      </div>
+      <div id="preview" class="preview win" data-mode="light"></div>
+
+      <div class="win">
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>3. put it in your profile</div>
+        <div class="win-body steps">
+          <ol>
+            <li>open your profile repo <code>github.com/<b class="u">you</b>/<b class="u">you</b></code> (create it if it does not exist).</li>
+            <li>save this as <code>cozy.config.json</code> in the repo root:
+              <div class="code"><button class="btn copy" data-copy="out-config">copy</button><pre id="out-config"></pre></div>
+            </li>
+            <li>save this as <code>.github/workflows/cozy-readme.yml</code>:
+              <div class="code"><button class="btn copy" data-copy="out-workflow">copy</button><pre id="out-workflow"></pre></div>
+            </li>
+            <li id="mal-step" hidden>add a repo secret <code>MAL_CLIENT_ID</code> with your myanimelist client id.</li>
+            <li>go to <b>actions → cozy-readme → run workflow</b>. it rewrites your <code>README.md</code> and keeps it fresh every night. (｡･ω･｡)</li>
+          </ol>
+          <p class="hint">want your own text around the cards? add a <code>README.template.md</code> with <code>{{cards}}</code> or <code>{{card:id}}</code> and set <code>template: README.template.md</code> in the workflow.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">made with ♡ by <a href="https://github.com/vxnsin">vxnsin</a> · <a href="https://github.com/vxnsin/cozy-readme">source</a> · look borrowed from <a href="https://vensin.dev">vensin.dev</a></footer>
+
+  <template id="card-tpl">
+    <li class="card">
+      <div class="card-head">
+        <button class="handle" title="toggle">▸</button>
+        <span class="card-type"></span>
+        <span class="card-id"></span>
+        <span class="card-tools">
+          <button class="mini up" title="move up">↑</button>
+          <button class="mini down" title="move down">↓</button>
+          <button class="mini remove" title="remove">×</button>
+        </span>
+      </div>
+      <div class="card-fields" hidden></div>
+    </li>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

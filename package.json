@@ -1,0 +1,14 @@
+{
+  "name": "cozy-readme",
+  "version": "1.0.0",
+  "description": "Old-web style, animated SVG cards for your GitHub profile README",
+  "type": "module",
+  "bin": { "cozy-readme": "bin/cli.js" },
+  "scripts": {
+    "example": "node bin/cli.js --config examples/vxnsin.config.json --out examples/out --readme examples/out/README.md --base-url ."
+  },
+  "engines": { "node": ">=20" },
+  "keywords": ["github", "profile", "readme", "svg", "anime", "retro"],
+  "author": "vxnsin",
+  "license": "MIT"
+}

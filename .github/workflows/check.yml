@@ -1,0 +1,23 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Render the example config
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node bin/cli.js --config examples/vxnsin.config.json --out out --readme out/README.md --base-url .
+      - name: Every card produced both themes
+        run: |
+          test "$(ls out/*-light.svg | wc -l)" -eq "$(ls out/*-dark.svg | wc -l)"
+          test "$(ls out/*-light.svg | wc -l)" -ge 10

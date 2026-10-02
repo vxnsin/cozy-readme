@@ -1,0 +1,108 @@
+name: cozy-readme
+description: Old-web style, animated SVG cards for your GitHub profile README (anime, stats, stack, snake and more)
+author: vxnsin
+branding:
+  icon: star
+  color: purple
+
+inputs:
+  config:
+    description: Path to the cozy-readme config
+    default: cozy.config.json
+  template:
+    description: Optional README template with {{card:<id>}} / {{cards}} placeholders. Without one the README is built from the config.
+    default: ''
+  readme:
+    description: README file to write
+    default: README.md
+  output_branch:
+    description: Branch the SVG files are published to (force-pushed as a single commit, so it never grows)
+    default: output
+  github_token:
+    description: Token for the GitHub stats and for pushing. A PAT counts private contributions too.
+    default: ${{ github.token }}
+  mal_client_id:
+    description: MyAnimeList client id, only needed for anime.source "myanimelist"
+    default: ''
+  commit_message:
+    description: Commit message for README changes
+    default: 'Update profile README'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Read config
+      id: cfg
+      shell: bash
+      env:
+        CONFIG: ${{ inputs.config }}
+      run: |
+        node -e '
+          const c = JSON.parse(require("fs").readFileSync(process.env.CONFIG, "utf8"));
+          const snake = (c.cards || []).some(card => card.type === "snake");
+          require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `snake=${snake}\n`);
+        '
+
+    - name: Generate contribution snake
+      if: steps.cfg.outputs.snake == 'true'
+      uses: Platane/snk/svg-only@v3
+      with:
+        github_user_name: ${{ github.repository_owner }}
+        outputs: ${{ runner.temp }}/cozy-snake/snake.svg
+
+    - name: Restore anime cover cache
+      shell: bash
+      run: |
+        mkdir -p "$RUNNER_TEMP/cozy-dist"
+        curl -fsSL -o "$RUNNER_TEMP/cozy-dist/anime-covers.json" \
+          "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${{ inputs.output_branch }}/anime-covers.json" \
+          || echo '{}' > "$RUNNER_TEMP/cozy-dist/anime-covers.json"
+
+    - name: Render cards
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        MAL_CLIENT_ID: ${{ inputs.mal_client_id }}
+        TEMPLATE: ${{ inputs.template }}
+      run: |
+        set -- --config "${{ inputs.config }}" --out "$RUNNER_TEMP/cozy-dist" --readme "${{ inputs.readme }}" \
+          --snake "$RUNNER_TEMP/cozy-snake/snake.svg" \
+          --base-url "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${{ inputs.output_branch }}"
+        if [ -n "$TEMPLATE" ]; then set -- "$@" --template "$TEMPLATE"; fi
+        node "$GITHUB_ACTION_PATH/bin/cli.js" "$@"
+
+    - name: Publish cards
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.github_token }}
+        BRANCH: ${{ inputs.output_branch }}
+      run: |
+        cd "$RUNNER_TEMP/cozy-dist"
+        git init -q -b "$BRANCH"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git commit -q -m "Update cozy-readme cards"
+        git push -q --force "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH:$BRANCH"
+
+    - name: Commit README
+      shell: bash
+      env:
+        README: ${{ inputs.readme }}
+        MESSAGE: ${{ inputs.commit_message }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add "$README"
+        if git diff --cached --quiet; then
+          echo "README is up to date"
+          exit 0
+        fi
+        git commit -q -m "$MESSAGE"
+        git pull -q --rebase
+        git push -q
