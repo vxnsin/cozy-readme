@@ -1,5 +1,6 @@
 // The configurator: edits a cozy.config.json, previews it with the real
-// renderer (sample data) and prints the files to drop into a profile repo.
+// renderer (sample data) and prints the files to drop into a profile or
+// project repo.
 // On GitHub Pages src/ and examples/ sit next to this file; locally they are
 // one level up.
 const lib = await import('./src/index.js').catch(() => import('../src/index.js'));
@@ -37,6 +38,20 @@ const REPO_STARTER = {
     { type: 'releases' },
     { type: 'contributors' }
   ]
+};
+
+// Each kind has its own starter, example, card choice and saved config.
+const KINDS = {
+  profile: {
+    starter: STARTER,
+    example: 'vxnsin.config.json',
+    types: ['header', 'about', 'stack', 'anime', 'stats', 'snake', 'marquee', 'button', 'badge', 'footer']
+  },
+  repo: {
+    starter: REPO_STARTER,
+    example: 'repo.config.json',
+    types: ['repo', 'commits', 'releases', 'contributors', 'header', 'stack', 'marquee', 'button', 'badge', 'footer']
+  }
 };
 
 // --- field definitions per card type --------------------------------------
@@ -93,20 +108,46 @@ const VARS_NOTE = 'text can use {year} {date} {years} {since} {anime.latest} {gi
 
 // --- state -----------------------------------------------------------------
 
-let config = load();
+let kind = loadKind();
+let config = load(kind);
 let mode = 'light';
 let openIndex = -1;
 
-function load() {
+function loadKind() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(`${STORAGE_KEY}:kind`);
+    if (saved && KINDS[saved]) return saved;
+  } catch { /* storage unavailable */ }
+  return 'profile';
+}
+
+function load(which) {
+  try {
+    const saved = localStorage.getItem(`${STORAGE_KEY}:${which}`);
     if (saved) return JSON.parse(saved);
   } catch { /* storage unavailable */ }
-  return structuredClone(STARTER);
+  return structuredClone(KINDS[which].starter);
 }
 
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch { /* storage unavailable */ }
+  try {
+    localStorage.setItem(`${STORAGE_KEY}:${kind}`, JSON.stringify(config));
+    localStorage.setItem(`${STORAGE_KEY}:kind`, kind);
+  } catch { /* storage unavailable */ }
+}
+
+function setKind(next) {
+  if (!KINDS[next] || next === kind) return;
+  save();
+  kind = next;
+  document.body.dataset.kind = kind;
+  document.querySelectorAll('.mode').forEach(b => b.setAttribute('aria-selected', String(b.dataset.kind === kind)));
+  fillAddTypes();
+  replaceConfig(load(kind));
+}
+
+function fillAddTypes() {
+  $('add-type').innerHTML = KINDS[kind].types.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 const get = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -123,7 +164,7 @@ const $ = id => document.getElementById(id);
 
 function bindBasics() {
   $('theme').innerHTML = presetNames.map(n => `<option value="${n}">${n}</option>`).join('');
-  $('add-type').innerHTML = Object.keys(cardTypes).map(n => `<option value="${n}">${n}</option>`).join('');
+  fillAddTypes();
   const fields = [
     ['github-user', 'github.user'], ['theme', 'theme'], ['since', 'since'], ['align', 'readme.align'],
     ['anime-source', 'anime.source'], ['anime-user', 'anime.user'], ['repo', 'repo']
@@ -330,10 +371,6 @@ function clean(value) {
   return value;
 }
 
-function isRepoSetup() {
-  return config.cards.length > 0 && config.cards.every(card => repoTypes.includes(card.type) || ['button', 'badge', 'marquee', 'stack'].includes(card.type));
-}
-
 function workflow() {
   const mal = get(config, 'anime.source') === 'myanimelist';
   return `name: cozy-readme
@@ -365,7 +402,7 @@ function renderOutputs() {
   $('mal-step').hidden = get(config, 'anime.source') !== 'myanimelist';
   const ids = normalizeCards(config).map(card => card.id);
   $('out-markers').textContent = `${ids.map(id => `<!-- cozy:${id} -->`).join('\n')}\n\n<!-- or all of them at once: -->\n<!-- cozy:cards -->\n`;
-  $('repo-step').hidden = !isRepoSetup();
+  $('repo-name-note').textContent = config.repo ? ` (${config.repo})` : '';
   document.querySelectorAll('.u').forEach(el => { el.textContent = get(config, 'github.user') || 'you'; });
 }
 
@@ -401,17 +438,22 @@ $('import').addEventListener('click', () => {
     $('import-error').hidden = false;
   }
 });
-$('repo-start').addEventListener('click', () => replaceConfig(structuredClone(REPO_STARTER)));
-$('reset').addEventListener('click', () => replaceConfig({ theme: 'spring', github: { user: '' }, cards: [] }));
+$('starter').addEventListener('click', () => replaceConfig(structuredClone(KINDS[kind].starter)));
+$('reset').addEventListener('click', () => replaceConfig(kind === 'repo' ? { theme: 'spring', repo: '', cards: [] } : { theme: 'spring', github: { user: '' }, cards: [] }));
 $('example').addEventListener('click', async () => {
-  for (const url of ['./examples/vxnsin.config.json', '../examples/vxnsin.config.json']) {
+  const file = KINDS[kind].example;
+  for (const url of [`./examples/${file}`, `../examples/${file}`]) {
     try {
       const response = await fetch(url);
       if (response.ok) { replaceConfig(await response.json()); return; }
     } catch { /* try the next location */ }
   }
-  replaceConfig(structuredClone(STARTER));
+  replaceConfig(structuredClone(KINDS[kind].starter));
 });
+
+for (const button of document.querySelectorAll('.mode')) {
+  button.addEventListener('click', () => setKind(button.dataset.kind));
+}
 
 // --- wiring ------------------------------------------------------------------
 
@@ -423,6 +465,8 @@ function changed() {
   timer = setTimeout(renderPreview, 350);
 }
 
+document.body.dataset.kind = kind;
+document.querySelectorAll('.mode').forEach(b => b.setAttribute('aria-selected', String(b.dataset.kind === kind)));
 bindBasics();
 fillBasics();
 renderList();

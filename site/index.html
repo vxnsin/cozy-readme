@@ -13,7 +13,17 @@
 <body>
   <header class="top">
     <h1 class="wordmark">cozy<span>.</span>readme</h1>
-    <p class="tagline"><span class="jp">コージー</span> · old-web cards for your github profile <span class="blink">▌</span></p>
+    <p class="tagline"><span class="jp">コージー</span> · old-web cards for your github profile and your repos <span class="blink">▌</span></p>
+    <div class="modes" role="tablist" aria-label="what are you making">
+      <button class="mode" data-kind="profile" aria-selected="true">
+        <span class="mode-name">profile readme</span>
+        <span class="mode-sub">github.com/you/you · about, anime, stats, snake</span>
+      </button>
+      <button class="mode" data-kind="repo" aria-selected="false">
+        <span class="mode-name">repo readme</span>
+        <span class="mode-sub">any project · repo stats, git log, releases, contributors</span>
+      </button>
+    </div>
   </header>
 
   <main class="layout">
@@ -21,19 +31,20 @@
       <div class="win">
         <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>1. basics</div>
         <div class="win-body grid2">
-          <label>github user<input id="github-user" class="input" placeholder="octocat"></label>
+          <label class="span2 only-repo">repository<input id="repo" class="input" placeholder="owner/name · empty = the repo the action runs in"></label>
+          <label class="only-profile">github user<input id="github-user" class="input" placeholder="octocat"></label>
           <label>theme<select id="theme" class="input"></select></label>
-          <label>coding since<input id="since" class="input" type="date"></label>
+          <label class="only-profile">coding since<input id="since" class="input" type="date"></label>
           <label>align<select id="align" class="input"><option value="center">center</option><option value="left">left</option></select></label>
-          <label>anime source<select id="anime-source" class="input">
+          <label class="only-profile">anime source<select id="anime-source" class="input">
             <option value="">none</option>
             <option value="anilist">anilist</option>
             <option value="myanimelist">myanimelist</option>
             <option value="kitsu">kitsu</option>
             <option value="aniworld">aniworld</option>
           </select></label>
-          <label>anime user<input id="anime-user" class="input" placeholder="your username there"></label>
-          <label class="span2">repo, for the repo cards (empty = the repo the action runs in)<input id="repo" class="input" placeholder="owner/name"></label>
+          <label class="only-profile">anime user<input id="anime-user" class="input" placeholder="your username there"></label>
+          <p class="hint span2 only-repo">enter a public repo to preview it with live data. in the action the repo it runs in is used when this stays empty.</p>
         </div>
       </div>
 
@@ -51,10 +62,11 @@
       <div class="win">
         <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>start from</div>
         <div class="win-body">
-          <p class="hint">a <b>profile</b> readme (<code>you/you</code>) or the readme of any <b>project repo</b>: repo stats, git log, releases, contributors.</p>
+          <p class="hint only-profile">the example is the profile of <a href="https://github.com/vxnsin">vxnsin</a>, the starter a blank-ish profile to fill in.</p>
+          <p class="hint only-repo">the example is <a href="https://github.com/vxnsin/cozy-readme">cozy-readme</a> itself, the starter has the four repo cards.</p>
           <div class="add-row">
-            <button id="example" class="btn">profile example</button>
-            <button id="repo-start" class="btn">project repo</button>
+            <button id="example" class="btn">load example</button>
+            <button id="starter" class="btn">starter</button>
             <button id="reset" class="btn">empty</button>
           </div>
         </div>
@@ -82,21 +94,22 @@
       <div id="preview" class="preview win" data-mode="light"></div>
 
       <div class="win">
-        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>3. put it in your profile</div>
+        <div class="win-title"><span class="dots"><i></i><i></i><i></i></span>3. <span class="only-profile">put it in your profile</span><span class="only-repo">put it in your repo</span></div>
         <div class="win-body steps">
           <ol>
-            <li>open your profile repo <code>github.com/<b class="u">you</b>/<b class="u">you</b></code> (create it if it does not exist), or any project repo.</li>
+            <li class="only-profile">open your profile repo <code>github.com/<b class="u">you</b>/<b class="u">you</b></code>. create it if it does not exist, a repo named exactly like your username shows up on your profile.</li>
+            <li class="only-repo">open the repo you want the cards in<span id="repo-name-note"></span>.</li>
             <li>save this as <code>cozy.config.json</code> in the repo root:
               <div class="code"><button class="btn copy" data-copy="out-config">copy</button><pre id="out-config"></pre></div>
             </li>
             <li>save this as <code>.github/workflows/cozy-readme.yml</code>:
               <div class="code"><button class="btn copy" data-copy="out-workflow">copy</button><pre id="out-workflow"></pre></div>
             </li>
-            <li id="repo-step" hidden>in a project repo you probably want to keep your own readme. put these markers where the cards should go, the action only fills them in and leaves the rest alone:
+            <li class="only-repo">put these markers into your <code>README.md</code> where the cards should go. the action only fills them in and leaves the rest of your readme alone:
               <div class="code"><button class="btn copy" data-copy="out-markers">copy</button><pre id="out-markers"></pre></div>
             </li>
             <li id="mal-step" hidden>add a repo secret <code>MAL_CLIENT_ID</code> with your myanimelist client id.</li>
-            <li>go to <b>actions → cozy-readme → run workflow</b>. it fills in your <code>README.md</code> and keeps it fresh every night. without markers it writes the whole file. (｡･ω･｡)</li>
+            <li>go to <b>actions → cozy-readme → run workflow</b>. <span class="only-profile">it writes your <code>README.md</code> and keeps it fresh every night.</span><span class="only-repo">it fills the markers and refreshes them every night. no markers? then it writes the whole file.</span> (｡･ω･｡)</li>
           </ol>
           <p class="hint">want your own text around the cards? add a <code>README.template.md</code> with <code>{{cards}}</code> or <code>{{card:id}}</code> and set <code>template: README.template.md</code> in the workflow.</p>
         </div>
