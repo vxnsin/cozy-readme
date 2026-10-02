@@ -3,15 +3,15 @@
 <!-- cozy:cards -->
 <div align="center">
 
-<a href="https://github.com/vxnsin/cozy-readme"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/repo-dark.svg?v=885e5b262d"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/repo-light.svg?v=885e5b262d" width="840" alt="vxnsin/cozy-readme: Old-web style, animated SVG cards for your GitHub profile README"></picture></a>
+<a href="https://github.com/vxnsin/cozy-readme"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/repo-dark.svg?v=940bb85e07"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/repo-light.svg?v=940bb85e07" width="840" alt="vxnsin/cozy-readme: Old-web style, animated SVG cards for your GitHub profile README"></picture></a>
 
 <a href="https://vxnsin.github.io/cozy-readme/"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/nav-configurator-dark.svg?v=e0ee626b4e"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/nav-configurator-light.svg?v=e0ee626b4e" width="186" alt="open the configurator →"></picture></a><a href="https://github.com/vxnsin"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/nav-example-dark.svg?v=dca8e3a0c2"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/nav-example-light.svg?v=dca8e3a0c2" width="102" alt="see it live"></picture></a>
 
-<a href="https://github.com/vxnsin/cozy-readme/commits"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/commits-dark.svg?v=61d0a18d42"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/commits-light.svg?v=61d0a18d42" width="840" alt="latest commits of vxnsin/cozy-readme"></picture></a>
+<a href="https://github.com/vxnsin/cozy-readme/commits"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/commits-dark.svg?v=0f88a8cd68"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/commits-light.svg?v=0f88a8cd68" width="840" alt="latest commits of vxnsin/cozy-readme"></picture></a>
 
 <a href="https://github.com/vxnsin/cozy-readme/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/releases-dark.svg?v=acf2863f2d"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/releases-light.svg?v=acf2863f2d" width="840" alt="releases: none yet"></picture></a>
 
-<a href="https://github.com/vxnsin/cozy-readme/graphs/contributors"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/contributors-dark.svg?v=cfc69f793a"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/contributors-light.svg?v=cfc69f793a" width="840" alt="contributors: vxnsin"></picture></a>
+<a href="https://github.com/vxnsin/cozy-readme/graphs/contributors"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/contributors-dark.svg?v=268fd295a1"><img src="https://raw.githubusercontent.com/vxnsin/cozy-readme/output/contributors-light.svg?v=268fd295a1" width="840" alt="contributors: vxnsin"></picture></a>
 
 </div>
 <!-- /cozy:cards -->
